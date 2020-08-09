@@ -7,9 +7,17 @@ namespace teleport
     {
         static void Main(string[] args)
         {
-            Server server = new Server(args[1]);
-            server.Start();
+            if (args[0] == "-r")
+            {
+                Reciver reciver = new Reciver(args[1]);
+            }
+            else
+            {
+                Server server = new Server(args[0]);
+                server.Start();
+            }
             
         }
     }
 }
+    

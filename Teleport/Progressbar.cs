@@ -27,8 +27,13 @@ namespace teleport
 	
 		public void Change(int absoute)
         {
-			int percent = absoute / (Max / 100);
-			ChangePercent(percent);
+			float percent = 0;
+			if (absoute > 0)
+            {
+				percent = absoute / (Max / 100f);
+				ChangePercent((int)percent);
+				
+            }
         }
 
 		public void ChangePercent(int percent)

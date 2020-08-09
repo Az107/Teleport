@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Teleport": {
+      "commandName": "Project",
+      "commandLineArgs": "test.txt"
+    }
+  }
+}
