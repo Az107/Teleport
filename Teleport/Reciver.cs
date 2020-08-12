@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Teleport
 {
@@ -20,13 +21,19 @@ namespace Teleport
             stream.Read(nameByte,0,1024);
             filename = Encoding.UTF8.GetString(nameByte).TrimEnd('\0');
             Console.WriteLine($"Downloading {filename}");
-            var file = File.Create("./" + filename);
-            file.Close();
-            FileStream fs = File.OpenWrite("./" + filename);
-            stream.Flush();
-            stream.CopyTo(fs);
-            fs.Close();
-            stream.Close();
+            try
+            {
+                var file = File.Create("./" + filename);
+                file.Close();
+                FileStream fs = File.OpenWrite("./" + filename);
+                stream.Flush();
+                stream.CopyTo(fs);
+                fs.Close();
+                stream.Close();
+            }catch (Exception e)
+            {
+                Console.WriteLine("ERROR: " + e.Message);
+            }
             client.Close();
 
 
