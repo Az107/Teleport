@@ -9,17 +9,17 @@ namespace Teleport
 {
     class Server
     {
-        public string filePath { get; set; }
+        public FileStream fileStream { get; set; }
         public String FileName { get; set; }
         public bool isAlive = false;
         private TcpListener Listener { get; set; }
         private byte[] fileBytes;
         public string hash;
-        private bool lowMemoryMode = false;
         public int Clients = 0;
         private int row = -1;
+        const int chunkSize = 1024;
 
-   
+
 
         private async void ClientHandler(TcpClient client)
         {
@@ -31,7 +31,13 @@ namespace Teleport
             name = Encoding.UTF8.GetBytes($"{FileName}");
             client.GetStream().Write(name);
             client.GetStream().Flush();
-            client.GetStream().Write(fileBytes);
+            var buffer = new byte[chunkSize];
+            int bytesRead;
+            while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                //here goes the progressbar
+                client.GetStream().Write(buffer);
+            }
             client.Close();
             Clients--;
             updateCli();
@@ -42,10 +48,10 @@ namespace Teleport
             if (row == -1) row = Console.CursorTop;
             Console.CursorTop = row;
             Console.CursorLeft = 0;
-            Console.Write(new String(' ',Console.WindowLeft));
+            Console.Write(new String(' ', Console.WindowLeft));
             Console.CursorLeft = 0;
             if (Clients == 0) Console.WriteLine("Waiting for Connections...");
-            else   Console.WriteLine($"Active clients [{Clients}]");
+            else Console.WriteLine($"Active clients [{Clients}]");
         }
 
         public void Start()
@@ -58,7 +64,7 @@ namespace Teleport
                 clientTask.Wait();
                 Task clientTask2 = new Task(() => ClientHandler(clientTask.Result));
                 clientTask2.Start();
-                
+
                 //clientTask.Start();
             }
 
@@ -70,8 +76,7 @@ namespace Teleport
             FileName = Path.GetFileName(file);
             Listener = new TcpListener(1100);
             isAlive = true;
-            filePath = file;
-            fileBytes = File.ReadAllBytes(file);
+            fileStream = File.OpenRead(file);
             Console.WriteLine("OK");
 
         }
