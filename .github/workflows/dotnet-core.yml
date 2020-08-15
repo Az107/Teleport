@@ -39,6 +39,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
       with:
        upload_url:  ${{ steps.create_release.outputs.upload_url }}
-       asset_path:  ./Teleport/bin/Release/netcoreapp3.1/publish/win10-x64/publish/Teleport.exe
+       asset_path:  ./Teleport/bin/Release/netcoreapp3.1/win10-x64/publish/Teleport.exe
        asset_name: Teleport.exe
        asset_content_type: application
