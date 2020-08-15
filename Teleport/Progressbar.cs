@@ -1,16 +1,16 @@
 ﻿using System;
 
 
-namespace teleport
+namespace Teleport
 {
 	public class Progressbar
 	{
-		public int Max { get; set; }
+		public long Max { get; set; }
 		public int progress = 0;
 		private int position;
 		public String Title = String.Empty;
 
-		public Progressbar(string title,int max)
+		public Progressbar(string title,long max)
 		{
 			Max = max;
 			Title = title;
@@ -41,6 +41,7 @@ namespace teleport
 			percent = (percent > 100 ? 100 : percent);
 			int oldPosition = Console.CursorTop;
 			Console.CursorTop = position;
+			Console.Write(new String(' ', Console.WindowLeft));
 			Console.CursorLeft = 0;
 			Console.WriteLine($"{Title}[{new String('=', percent)}{new String(' ', 100 - percent)}]{percent}%");
 			Console.CursorTop = oldPosition;
