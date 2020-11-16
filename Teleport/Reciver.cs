@@ -11,11 +11,12 @@ namespace Teleport
     {
         string filename { get; set;  }
        
+        private int Port = 1100;
 
         public Reciver(string ip)
         {
             TcpClient client = new TcpClient();
-            client.Connect(ip, 1100);
+            client.Connect(ip, Port);
             NetworkStream stream = client.GetStream();
             byte[] nameByte = new byte[1024];
             stream.Read(nameByte,0,1024);

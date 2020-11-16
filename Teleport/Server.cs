@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
+using System.Net;
 namespace Teleport
 {
     class Server
     {
         public FileStream fileStream { get; set; }
+        private int Port = 1100;
+
         public String FileName { get; set; }
         public bool isAlive = false;
         private TcpListener Listener { get; set; }
@@ -32,8 +35,7 @@ namespace Teleport
             client.GetStream().Write(name);
             client.GetStream().Flush();
             var buffer = new byte[chunkSize];
-            int bytesRead;
-            while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+            while ((fileStream.Read(buffer, 0, buffer.Length)) > 0)
             {
                 //here goes the progressbar
                 client.GetStream().Write(buffer);
@@ -74,7 +76,7 @@ namespace Teleport
         {
 
             FileName = Path.GetFileName(file);
-            Listener = new TcpListener(1100);
+            Listener = new TcpListener(IPAddress.Any, Port);
             isAlive = true;
             fileStream = File.OpenRead(file);
             Console.WriteLine("OK");
