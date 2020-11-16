@@ -2,7 +2,7 @@
   "profiles": {
     "Teleport": {
       "commandName": "Project",
-      "commandLineArgs": "test.txt"
+      "commandLineArgs": "C:\\Users\\alber\\Downloads\\Fedora-Workstation-Live-x86_64-32-1.6.iso"
     }
   }
 }
