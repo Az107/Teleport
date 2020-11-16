@@ -19,6 +19,7 @@ namespace Teleport
         public int Clients = 0;
         private int row = -1;
         const int chunkSize = 1024 * 1024;
+        private int Port = 1100;
 
 
 
@@ -83,7 +84,7 @@ namespace Teleport
             filePath = file;
             FileName = Path.GetFileName(file);
             fileSize = (new FileInfo(file)).Length;
-            Listener = new TcpListener(1100);
+            Listener = new TcpListener(Port);
             isAlive = true;
 
         }
