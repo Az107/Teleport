@@ -4,8 +4,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
-
 using System.Net;
+
 namespace Teleport
 {
     class Server
@@ -84,7 +84,7 @@ namespace Teleport
             filePath = file;
             FileName = Path.GetFileName(file);
             fileSize = (new FileInfo(file)).Length;
-            Listener = new TcpListener(Port);
+            Listener = new TcpListener(IPAddress.Any, Port);
             isAlive = true;
 
         }
