@@ -33,7 +33,7 @@ namespace Teleport
 
         private CancellationTokenSource cts = new CancellationTokenSource();    
 
-        private async void ClientHandler(TcpClient client)
+        private  void ClientHandler(TcpClient client)
         {
             ClientConnectedEvent?.Invoke(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
             FileStream fileStream = File.OpenRead(filePath);
@@ -63,22 +63,23 @@ namespace Teleport
 
         public void Stop(){
             isAlive = false;
-            while(Clients != 0){
+            int timeOut = 10;
+            while(Clients != 0 && timeOut != 0){
                 Thread.Sleep(100);
+                timeOut --;
             }
             cts.Cancel();
         }
 
-        public void ForceStop(){
-            isAlive = false;
-            cts.Cancel(false);
-        }
 
-        public void StartInThread(){
-            new Thread(new ThreadStart(Start)).Start();
+
+        public void Start(bool inBackground = true){
+            if (inBackground) Task.Run(Start);
+            else Start();
         }
-        public void Start()
+        private  void Start()
         {
+
             if (string.IsNullOrEmpty(filePath)) throw NoFileException;
             isAlive = true;
             Listener.Start();
@@ -89,7 +90,7 @@ namespace Teleport
                 Task clientTask2 = new Task(() => ClientHandler(clientTask.Result),cts.Token);
                 clientTask2.Start();
 
-            }
+            }              
 
         }
 
@@ -104,7 +105,7 @@ namespace Teleport
         public Server(string file)
         {
             AddFile(file);
-            Listener = new TcpListener(Port);
+            Listener = new TcpListener(IPAddress.Any,Port);
 
         }
     }
