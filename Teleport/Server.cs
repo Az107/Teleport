@@ -5,11 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net;
+using System.Threading;
 
 namespace Teleport
 {
-    class Server
+    public class Server
     {
+
+        public Exception NoFileException;
+        public delegate void NewClientd(String ip);
+        public event NewClientd ClientConnectedEvent;
+        public event NewClientd ClientDisconnectedEvent;
+
+
+
+
         public String filePath { get; set; }
         public String FileName { get; set; }
         public bool isAlive = false;
@@ -17,19 +27,17 @@ namespace Teleport
         private long fileSize = -1;
         public string hash;
         public int Clients = 0;
-        private int row = -1;
+
         const int chunkSize = 1024 * 1024;
         private int Port = 1100;
 
-
+        private CancellationTokenSource cts = new CancellationTokenSource();    
 
         private async void ClientHandler(TcpClient client)
         {
+            ClientConnectedEvent?.Invoke(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
             FileStream fileStream = File.OpenRead(filePath);
-            Progressbar pb = new Progressbar("c1", fileSize);
-            pb.Start();
             Clients++;
-            updateCli();
             byte[] name = new byte[1024];
             name = Encoding.UTF8.GetBytes($"{FileName}");
             client.GetStream().Write(name);
@@ -41,51 +49,62 @@ namespace Teleport
             {
                 totalBytesReaded += bytesRead;
                 client.GetStream().Write(buffer);
-                pb.Change(totalBytesReaded);
                 Array.Clear(buffer, 0, buffer.Length);
 
             }
             client.Close();
             fileStream.Close();
             Clients--;
-            updateCli();
+            ClientDisconnectedEvent?.Invoke(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
 
-        private void updateCli()
-        {
-            if (row == -1) row = Console.CursorTop;
-            Console.CursorTop = row;
-            Console.CursorLeft = 0;
-            Console.Write(new String(' ', Console.WindowLeft));
-            Console.CursorLeft = 0;
-            if (Clients == 0) Console.WriteLine("Waiting for Connections...");
-            else Console.WriteLine($"Active clients [{Clients}]");
+
+        public void Stop(){
+            isAlive = false;
+            while(Clients != 0){
+                Thread.Sleep(100);
+            }
+            cts.Cancel();
         }
 
+        public void ForceStop(){
+            isAlive = false;
+            cts.Cancel(false);
+        }
+
+        public void StartInThread(){
+            new Thread(new ThreadStart(Start)).Start();
+        }
         public void Start()
         {
+            if (string.IsNullOrEmpty(filePath)) throw NoFileException;
+            isAlive = true;
             Listener.Start();
-            updateCli();
             while (isAlive)
             {
                 Task<TcpClient> clientTask = Listener.AcceptTcpClientAsync();
-                clientTask.Wait();
-                Task clientTask2 = new Task(() => ClientHandler(clientTask.Result));
+                clientTask.Wait(cts.Token);
+                Task clientTask2 = new Task(() => ClientHandler(clientTask.Result),cts.Token);
                 clientTask2.Start();
 
             }
 
         }
 
-        public Server(string file)
-        {
+        public void AddFile(String file){
             filePath = file;
             FileName = Path.GetFileName(file);
             fileSize = (new FileInfo(file)).Length;
-            Listener = new TcpListener(IPAddress.Any, Port);
-            isAlive = true;
+
+        }
+
+
+        public Server(string file)
+        {
+            AddFile(file);
+            Listener = new TcpListener(Port);
 
         }
     }

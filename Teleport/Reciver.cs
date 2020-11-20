@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Teleport
 {
-    class Reciver
+    public class Reciver
     {
         string filename { get; set;  }
        
